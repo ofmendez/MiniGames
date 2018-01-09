@@ -14,6 +14,12 @@ public class Node : MonoBehaviour{
 	}
 
 
+
+	public void PrintName(){	
+//		Debug.Log("TOCA: "+mText.text);
+	}
+
+
 	public int GetValue(){	
 		return  value == "INF"? 999999 : Convert.ToInt32(value);
 	}

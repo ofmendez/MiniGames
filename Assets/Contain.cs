@@ -10,9 +10,9 @@ public class Contain : MonoBehaviour {
 	
 	public GameObject childPrefab;
 	public bool isLeave;
-	public bool value;
 	private LinkedList<GameObject> childs = new LinkedList<GameObject>();
-	public int nNode =0;
+	// public bool value;
+	// int nNode =0;
 
 	public void CreateNodes(int n){
 		if (!isLeave){
@@ -20,22 +20,23 @@ public class Contain : MonoBehaviour {
 		}
 		for (int i = 0; i < n; i++){
 			GameObject child = Instantiate(childPrefab, this.gameObject.transform, true);
+			child.SetActive(true);
 			childs.AddLast(child);
 		}
 
 	}
 
-	public void DestroyChilds(int n){
-		if (!isLeave){
-			childPrefab.GetComponent<Contain>().DestroyChilds(n);
-		}
-		for (int i = 0; i < n; i++){
-			GameObject o = childs.Last();
-			childs.RemoveLast();
-			Destroy(o);
-		}
+	// public void DestroyChilds(int n){
+	// 	if (!isLeave){
+	// 		childPrefab.GetComponent<Contain>().DestroyChilds(n);
+	// 	}
+	// 	for (int i = 0; i < n; i++){
+	// 		GameObject o = childs.Last();
+	// 		childs.RemoveLast();
+	// 		Destroy(o);
+	// 	}
 
-	}
+	// }
 
 
 
