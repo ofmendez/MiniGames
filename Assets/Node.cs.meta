@@ -1,11 +1,15 @@
 fileFormatVersion: 2
 guid: 6c1d6c11667a043a19de6face66dba0a
-timeCreated: 1515432386
-licenseType: Free
+timeCreated: 1515620745
+licenseType: Pro
 MonoImporter:
-  externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - mText: {instanceID: 0}
+  - mImg: {instanceID: 0}
+  - ball: {fileID: 21300000, guid: 16f611375a25c4f42a86be6ae3305f7d, type: 3}
+  - enemy: {fileID: 21300000, guid: fb1ad88373811534b958d9be8cc89a87, type: 3}
+  - target: {fileID: 21300000, guid: 0c843d063a07a864aab411fead70e151, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
