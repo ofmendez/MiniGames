@@ -129,8 +129,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c1d6c11667a043a19de6face66dba0a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ownX: 0
-  ownY: 0
   id: 0
   mText: {fileID: 114873809473917390}
   mImg: {fileID: 114033370221832546}
@@ -138,7 +136,8 @@ MonoBehaviour:
   ball: {fileID: 21300000, guid: 16f611375a25c4f42a86be6ae3305f7d, type: 3}
   enemy: {fileID: 21300000, guid: fb1ad88373811534b958d9be8cc89a87, type: 3}
   target: {fileID: 21300000, guid: 0c843d063a07a864aab411fead70e151, type: 3}
-  pressed: {fileID: 21300000, guid: 2f78c3eb0d168124eba392482068d797, type: 3}
+  press: {fileID: 21300000, guid: 2f78c3eb0d168124eba392482068d797, type: 3}
+  intersected: {fileID: 21300000, guid: 72b0b020f65e92f44944b56362b1c248, type: 3}
 --- !u!114 &114033370221832546
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -158,7 +157,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_Sprite: {fileID: 10917, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
   m_Type: 1
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -357,7 +356,7 @@ MonoBehaviour:
       m_PersistentCalls:
         m_Calls:
         - m_Target: {fileID: 114024932416836822}
-          m_MethodName: PrintName
+          m_MethodName: Touch
           m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -367,6 +366,23 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+      m_TypeName: UnityEngine.EventSystems.EventTrigger+TriggerEvent, UnityEngine.UI,
+        Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+  - eventID: 2
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 114024932416836822}
+          m_MethodName: Touch
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 1
       m_TypeName: UnityEngine.EventSystems.EventTrigger+TriggerEvent, UnityEngine.UI,
         Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   delegates: []

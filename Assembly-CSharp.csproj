@@ -52,9 +52,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\BallMG2.cs" />
     <Compile Include="Assets\Contain.cs" />
     <Compile Include="Assets\MainController.cs" />
     <Compile Include="Assets\MiniGame1.cs" />
+    <Compile Include="Assets\MiniGame2.cs" />
     <Compile Include="Assets\Node.cs" />
     <Reference Include="Facebook.Unity.Settings">
       <HintPath>D:/Fabian2017/MiniGames/Library/FacebookSDK/Facebook.Unity.Settings.dll</HintPath>

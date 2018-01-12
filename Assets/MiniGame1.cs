@@ -11,37 +11,92 @@ public class MiniGame1 : Singleton<MiniGame1> {
 	
 	public GameObject boardPrefab;
 	public GameObject boardHolder;
-	EState actualState;
-	List<int> enemies = new List<int>(); 
+	public GameObject winScreen;
+	public GameObject looseScreen;
+	public bool onlyBeginWithBall;
 	Dictionary<int, List<int>> graph = new Dictionary<int, List<int>>();
-	List<Node> nodes = new List<Node>();
 	GameObject tempBoard;
+	EState actualState;
+	List<int> touchedNodes = new List<int>(); 
+	List<int> enemies = new List<int>(); 
+	List<Node> nodes = new List<Node>();
 	int side;
 	Node ball;
 	Node target_origin;
-	float timeToShowEnemies = 0.5f;
-	// public Toggle tSelected;
+	Node lastTouched;
+	float timeToShowEnemies = 2.5f;
+	string firstTouched;
 
- 	void Start(){
- 		ResetGame(4);
+ 	public void LaunchLevel(Text ns){ // Será innecesarip, llamar directamente a ResetGame ( ->lados del cuadrado <-)
+		int n; int.TryParse(ns.text, out n);
+		if (n>2 && n <9)
+			ResetGame(n);
  	}
 
  	void Update() {
-        if (Input.touchCount > 0 && actualState == EState._DrawingPath ) {
-			
-        }
+		if (Input.GetMouseButtonUp (0) && actualState == EState._DrawingPath) 
+	        DisplayBallAndtarget_origin();
     }
+
+
+    public void EvalTouchedNode(int touchedId){
+    	if(actualState == EState._ShowBallAndTs && StartCorrectly(touchedId) ){
+    		BeginDrawPath(touchedId);
+    	}
+    	if(actualState == EState._DrawingPath && CanBePressed(touchedId)  ){
+    		PressNewNode(touchedId);
+    	}
+    }
+
+
+    void PressNewNode(int touchedId){
+    	if(EndCondition(touchedId)){
+    		EvalWinOrLoose(touchedId);
+    	}
+		nodes[touchedId-1].PutSpritePressed();
+		lastTouched = nodes[touchedId-1];
+	    touchedNodes.Add(lastTouched.id);
+    }
+
+
+    void BeginDrawPath(int touchedId){
+		actualState = EState._DrawingPath;
+    	firstTouched = nodes[touchedId-1] == ball ? "ball" :"target_origin";
+		nodes[touchedId-1].PutSpritePressed();
+		lastTouched = nodes[touchedId-1];
+	    touchedNodes.Add(lastTouched.id);
+    }
+
+    void EvalWinOrLoose(int touchedId){
+    	if (touchedNodes.Intersect(enemies).Any())
+    		looseScreen.SetActive(true);
+	    else
+		    winScreen.SetActive(true);
+	    actualState = EState._DonePath;
+	    DisplayEnemies();
+    }
+
 
 	// SETUP
 	public void ResetGame(int n){
-		actualState = EState._ShowEnemies;
+		ClearElements();
+		actualState = EState._ShowEnemies;		
 		side = n;
 		InstantiateElements();
 		SetNamesAndAxis();
 		SetEnemies();
 		MakeGraph();
-		StartCoroutine(DisplayEnemies());
-		DisplayLinks();
+		StartCoroutine(DisplayEnemiesForAWhile());
+		// DisplayLinks();
+	}
+
+	public void ClearElements(){
+		winScreen.SetActive(false);
+		looseScreen.SetActive(false);
+		if(tempBoard) Destroy(tempBoard);
+		enemies.Clear();
+		touchedNodes.Clear();
+		nodes.Clear();
 	}
 
 	void InstantiateElements(){
@@ -49,8 +104,6 @@ public class MiniGame1 : Singleton<MiniGame1> {
 		tempBoard.GetComponent<Contain>().CreateNodes(side);
 		nodes = tempBoard.GetComponentsInChildren<Node>().ToList();
 	}
-
-
 
 
 	public void SetNamesAndAxis(){
@@ -64,9 +117,7 @@ public class MiniGame1 : Singleton<MiniGame1> {
 		}
 	}
 	
-	private void SetShowBallAndTsState()	{
-		actualState = EState._ShowBallAndTs;
-		CleanSprites(true);
+	private void SetBallAndTarget()	{
 		do{ SetBallAndtarget_origin();}
 		while (!IsConnected(ball.id, target_origin.id));
 		DisplayBallAndtarget_origin();		
@@ -93,21 +144,28 @@ public class MiniGame1 : Singleton<MiniGame1> {
 
 
 // CONTROL SPRITES
-	IEnumerator DisplayEnemies(){
-		foreach(Node node in nodes){
-			if(enemies.Contains(node.id))
-				node.PutSpriteEnemy();
-		}
+	IEnumerator DisplayEnemiesForAWhile(){
+		DisplayEnemies();
 		yield return new WaitForSeconds(timeToShowEnemies);
-		SetShowBallAndTsState();
+		SetBallAndTarget();
+	}
+
+	void DisplayEnemies(){
+		bool muustShowIntersected =  false;
+		foreach(Node node in nodes){
+			muustShowIntersected = (actualState == EState._DonePath && touchedNodes.Contains(node.id));
+			if(enemies.Contains(node.id))
+				node.PutSpriteEnemy(muustShowIntersected);
+		}
 	}
 	
 	private void DisplayBallAndtarget_origin()	{
+		actualState = EState._ShowBallAndTs;
+		touchedNodes.Clear();
+		CleanSprites(true);
 		ball.PutSpriteBall();
 		target_origin.PutSpriteTarget();
-		// for (int i = 0; i < side*side; i++){
-		// 	Debug.Log("Esta pendejada: " +i+ " , "+ nodes[i].id);
-		// }
+		firstTouched = "";
 	}
 	
 	private void CleanSprites(bool cleanBallAndTarget){
@@ -118,7 +176,16 @@ public class MiniGame1 : Singleton<MiniGame1> {
 	}
 
 // AUXILIARES
-	
+    bool  StartCorrectly(int touchedId){
+    	return (onlyBeginWithBall && touchedId == ball.id) || (!onlyBeginWithBall && (touchedId == ball.id || touchedId == target_origin.id));
+    }
+    bool EndCondition(int touchedId){
+    	return (firstTouched == "ball" && nodes[touchedId-1] == target_origin) || (firstTouched == "target_origin" && nodes[touchedId-1] == ball);
+    }
+    bool CanBePressed(int touchedId){
+    	return lastTouched.GetNeighbours(side, new List<int>() ).Contains(touchedId) && ! nodes[touchedId-1].IsPressed();
+    }
+
 	private void MakeGraph(){
 		foreach (Node node in nodes){
 			graph[node.id] = new List<int>();
@@ -129,15 +196,13 @@ public class MiniGame1 : Singleton<MiniGame1> {
 		}
 	}
 	
-	int DFS(int node, Dictionary<int, string> color){
+	void DFS(int node, Dictionary<int, string> color){
 		color[node] = "gray";
-		int total_marked = 1;
 		foreach(int neighbor in graph[node]){
 	        if (color[neighbor] == "white")
-	            total_marked += DFS( neighbor, color);
+	            DFS( neighbor, color);
 		}
 		color[node] = "black";
-	    return total_marked;
 	}
 
     bool IsConnected(int _p1,int _p2){
@@ -160,223 +225,4 @@ public class MiniGame1 : Singleton<MiniGame1> {
 			node.PutText(t);
 		}
 	}
-
-	// private void ShowThisStage(int[,] distance){
-	// 	List<Node> nodes = GetComponentsInChildren<Node>(true).ToList();
-	// 	int i =0,j = 0;
-	// 	foreach (Node node in nodes){
-	// 		node.SetValue(""+distance[j,i]);
-	// 		i++;
-	// 		if ((i % side) == 0){
-	// 			i = 0;
-	// 			j++;
-	// 		}
-	// 		i= (i%side) ==0 ? 0: i;
-	// 	}
-	// }
-
-
-	// public void ApplyAndBeginProcess(){
-		// buttonsSums.SetActive(false);
-		// buttonsPlus_minus.SetActive(false);
-		// buttonsAdvance.SetActive(true);
-		// buttonBackSteps.SetActive(true);
-		// GetInitValues();
-		// buttonsAdvance.GetComponentsInChildren<Button>()[0].interactable = false;
-		// buttonsAdvance.GetComponentsInChildren<Button>()[1].interactable = true;
-		// ShowFloydUntil(0);
-	// }
-
-	// public void NextFloyd(){
-	// 	if (actualStage < side){
-	// 		ShowFloydUntil(actualStage+1);			
-	// 	}
-	// 	// buttonsAdvance.GetComponentsInChildren<Button>()[0].interactable = (actualStage>0);
-	// 	// buttonsAdvance.GetComponentsInChildren<Button>()[1].interactable =  (actualStage<side);
-	// }
-
-	// public void PreviousFloyd(){
-	// 	if (actualStage > 0){
-	// 		ShowFloydUntil(actualStage-1);			
-	// 	}
-	// 	// buttonsAdvance.GetComponentsInChildren<Button>()[0].interactable = (actualStage>0);
-	// 	// buttonsAdvance.GetComponentsInChildren<Button>()[1].interactable =  (actualStage<side);
-	// }
-	
-	// void ShowFloydUntil(int i){
-	// 	actualStage = i;
-	// 	//title.text = "D (" + i + ")";
-	// 	//PaintWhiteSquares();
-	// 	ExecuteFloydUntil(i);
-	// 	//PaintStepSquares(i-1);
-	// }
-
-
-	// void ExecuteFloydUntil(int target_origin){
-	// 	int[,] distance = new int[side, side];
-
-	// 	for (int i = 0; i < side; ++i)
-	// 	for (int j = 0; j < side; ++j)
-	// 		distance[i, j] = grafo[i, j];
-
-	// 	for (int k = 0; k < target_origin; ++k){
-	// 		for (int i = 0; i < side; ++i){
-	// 			for (int j = 0; j < side; ++j){
-	// 				if (distance[i, k] + distance[k, j] < distance[i, j]){
-	// 					distance[i, j] = distance[i, k] + distance[k, j];
-	// 					if (distance[i, k] == 999999 || distance[k, j] == 999999)
-	// 						distance[i, j] = 999999;
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// 	ShowThisStage(distance);
-	// }
-
-		// void GetInitValues(){
-	// 	List<Node> nodes = GetComponentsInChildren<Node>(true).ToList();
-	// 	int i =0 ,j= 0;		
-	// 	foreach (Node node in nodes){
-	// 		grafo[j,i] = node.GetValue();
-	// 		i++;
-	// 		if ((i % side) == 0){
-	// 			i = 0;
-	// 			j++;
-	// 		}
-	// 		i= (i%side) ==0 ? 0: i;
-	// 	}
-	// }
-	
-
-	// void InitializeValues(){
-		
-	// 	int j = 0;
-	// 	List<Toggle> toggles = GetComponentsInChildren<Toggle>().ToList();
-	// 	foreach (Toggle toggle in toggles){
-	// 		if (j%(side+1) >0 && j>side){
-	// 			toggle.GetComponentInChildren<Text>().color = Color.black;
-	// 			toggle.GetComponentInChildren<Node>().SetValue( j%(side+2) ==0?"0":"INF");
-	// 		}
-	// 		j++;
-	// 	}
-	// }
-	
-	//AUX NODES
-/*
-	public void ShowPath(){
-		PaintWhiteSquares();
-		int[,] distance = new int[side, side];
-		char[,] path = new char[side, side];
-		char c = 'A';
-		for (int i = 0; i < side; ++i){
-			for (int j = 0; j < side; ++j){
-				path[i, j] = c;
-				distance[i, j] = grafo[i, j];
-				c++;
-			}
-			c = 'A';
-		}
-		c = 'A';
-		for (int k = 0; k < side; ++k){
-			for (int i = 0; i < side; ++i){
-				for (int j = 0; j < side; ++j){
-					if (distance[i, k] + distance[k, j] < distance[i, j]){
-						distance[i, j] = distance[i, k] + distance[k, j];
-						path[i, j] = (char)(c+k);
-						if (distance[i, k] == 999999 || distance[k, j] == 999999)
-							distance[i, j] = 999999;
-					}
-				}
-			}
-		}
-		ShowThisPath(path);
-		
-	}
-
-	public void ShowSteps(){
-		ShowFloydUntil(0);
-	}
-
-	private void ShowThisPath(char[,] path){
-		List<Node> nodes = GetComponentsInChildren<Node>(true).ToList();
-		int i =0,j = 0;
-		foreach (Node node in nodes){
-			node.SetValue(  i!=j ?  (""+path[j,i])  : "--" );
-			i++;
-			if ((i % side) == 0){
-				i = 0;
-				j++;
-			}
-			i= (i%side) ==0 ? 0: i;
-		}
-	}
-
-	public void SelectToggle (Toggle _t){
-		if (_t.isOn){
-			tSelected = _t;
-			List<Toggle> toggles = GetComponentsInChildren<Toggle>().ToList();
-			foreach (Toggle toggle in toggles){
-				toggle.gameObject.SetActive(false);
-				toggle.isOn = false;
-				toggle.gameObject.SetActive(true);				
-			}			
-			tSelected.gameObject.SetActive(false);
-			tSelected.isOn = true;
-			tSelected.gameObject.SetActive(true);
-		}
-	}
-	
-	public void AddValueToNode(int v){
-		Node node = tSelected.GetComponent<Node>();
-		node.AddValue(v);
-
-	}
-
-	public void SetValueToNode(int v){
-		Node node = tSelected.GetComponent<Node>();
-		node.SetValue(""+v);
-	}
-	
-	public void DestroyChilds(){
-		containVertical.DestroyChilds(side);
-	}
-
-	
-	void PrintGraph(){
-		string toPrint = "";
-		for (int i = 0; i < side; i++) {
-			for (int j = 0; j < side; j++) {
-				toPrint += (string.Format("{0} ", grafo[i, j]));
-			}
-			toPrint +=("\n");
-		}
-		Debug.Log(toPrint);
-	}
-
-	void PaintWhiteSquares(){
-		List<Node> nodes = GetComponentsInChildren<Node>(true).ToList();
-		int i =0 ,j= 0;		
-		foreach (Node node in nodes){
-			node.GetComponentInChildren<Image>().color = Color.white;
-		}
-	}
-
-	void PaintStepSquares(int d){
-
-		List<Node> nodes = GetComponentsInChildren<Node>(true).ToList();
-		int i =0 ,j= 0;		
-		foreach (Node node in nodes){
-			if (i == d || j == d){
-				node.GetComponentInChildren<Image>().color = Color.yellow;
-			}		
-			i++;
-			if ((i % side) == 0){
-				i = 0;
-				j++;
-			}
-			i= (i%side) ==0 ? 0: i;
-		}
-	}
-*/
-
 }

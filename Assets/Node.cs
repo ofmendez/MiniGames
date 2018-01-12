@@ -6,8 +6,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class Node : MonoBehaviour{
-	public int ownX;
-	public int ownY;
+	int ownX;
+	int ownY;
 	public int id;
 	public Text mText;
 	public Image mImg;
@@ -15,8 +15,10 @@ public class Node : MonoBehaviour{
 	public  Sprite ball;
 	public  Sprite enemy;
 	public  Sprite target;
-	public  Sprite pressed;
+	public  Sprite press;
+	public  Sprite intersected;
 	private bool imBallOrTarget;
+	bool pressed;
 	
 	public void SetAxis(int _x, int _y, int _id){
 		ownX = _x;
@@ -43,15 +45,27 @@ public class Node : MonoBehaviour{
 
 	public void PutSpriteDefault(){
 		mImg.sprite = def;
+		pressed = false;
 	}
 	public void PutSpriteBall(){
 		mImg.sprite = ball;
+		pressed = false;
 	}
-	public void PutSpriteEnemy(){
-		mImg.sprite = enemy;
+	public void PutSpriteEnemy(bool intersect){
+		mImg.sprite = intersect ? intersected: enemy;
+		pressed = false;
 	}
 	public void PutSpriteTarget(){
 		mImg.sprite = target;
+		pressed = false;
+	}
+	public void PutSpritePressed(){
+		mImg.sprite = press;
+		pressed = true;
+	}
+
+	public bool IsPressed(){
+		return pressed;
 	}
 
 	public List<int> GetNeighbours(int side, List<int> enemies){
@@ -67,23 +81,13 @@ public class Node : MonoBehaviour{
 		return result;
 
 	}	
-
 	
-	public void PrintName(){	
-//		Debug.Log("TOCA: "+mText.text);
+	public void Touch(){	
+		MiniGame1.main.EvalTouchedNode(id);
 	}
 
 	public void PutText( string _t){
 		mText.text = _t;
 	}
 	
-	// public int GetValue(){	
-		// return  value == "INF"? 999999 : Convert.ToInt32(value);
-	// }
-
-	public void AddValue(int i){
-		// int actual = GetValue();
-		// int result = actual == 999999 ? i: actual+i;
-		// SetValue(""+result);
-	}
 }
