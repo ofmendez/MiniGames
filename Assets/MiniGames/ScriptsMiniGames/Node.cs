@@ -19,11 +19,13 @@ public class Node : MonoBehaviour{
 	public  Sprite intersected;
 	private bool imBallOrTarget;
 	bool pressed;
+	Shadow shadow;
 	
 	public void SetAxis(int _x, int _y, int _id){
 		ownX = _x;
 		ownY = _y;
 		id = _id;
+		shadow = GetComponentInChildren<Shadow>();
 		// mText.text = ownX+" , "+ownY+", id:  "+id;
 	}
 
@@ -44,23 +46,31 @@ public class Node : MonoBehaviour{
 	}
 
 	public void PutSpriteDefault(){
+		mImg.color =  Color.white;
+		shadow.enabled = false;
 		mImg.sprite = def;
 		pressed = false;
 	}
+	
 	public void PutSpriteBall(){
 		mImg.sprite = ball;
 		pressed = false;
 	}
+	
 	public void PutSpriteEnemy(bool intersect){
 		mImg.sprite = intersect ? intersected: enemy;
 		pressed = false;
 	}
+	
 	public void PutSpriteTarget(){
 		mImg.sprite = target;
 		pressed = false;
 	}
+	
 	public void PutSpritePressed(){
-		mImg.sprite = press;
+		shadow.enabled = true;
+		mImg.color = new Color(1f,0.4f,0f,1f);
+		mImg.sprite = def;
 		pressed = true;
 	}
 

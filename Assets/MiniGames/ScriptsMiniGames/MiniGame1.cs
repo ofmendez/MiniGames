@@ -27,7 +27,7 @@ public class MiniGame1 : Singleton<MiniGame1> {
 	float timeToShowEnemies = 2.5f;
 	string firstTouched;
 
- 	public void LaunchLevel(Text ns){ // Será innecesarip, llamar directamente a ResetGame ( ->lados del cuadrado <-)
+ 	public void LaunchLevel(Text ns){ // Será innecesario, llamar directamente a ResetGame ( ->lados del cuadrado <-)
 		int n; int.TryParse(ns.text, out n);
 		if (n>2 && n <9)
 			ResetGame(n);
@@ -69,12 +69,20 @@ public class MiniGame1 : Singleton<MiniGame1> {
 
     void EvalWinOrLoose(int touchedId){
     	if (touchedNodes.Intersect(enemies).Any())
-    		looseScreen.SetActive(true);
+    		LooseGame();
 	    else
-		    winScreen.SetActive(true);
+	    	WinGame();
 	    actualState = EState._DonePath;
 	    DisplayEnemies();
     }
+
+	void WinGame(){
+		winScreen.SetActive(true);   ///GANO EL JUEGO		
+	}
+
+	void LooseGame(){
+    	looseScreen.SetActive(true); ///PERDIO EL JUEGO				
+	}
 
 
 	// SETUP
